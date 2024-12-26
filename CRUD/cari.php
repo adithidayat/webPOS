@@ -48,7 +48,7 @@ if (!empty($_GET['cari']) && isset($_GET['keyword'])) {
                 echo '<td>';
                 // Pastikan $_SESSION ada dan valid
                 if (isset($_SESSION['login_user'])) {
-                    echo '<a href="fungsi/tambah/tambah.php?jual=jual&id=' . $row['ID_Produk'] . $_SESSION['login_user'] . '" class="btn btn-success">';
+                    echo '<a href="jual.php?add_to_cart=true&id=' . $row['ID_Produk'] . '" class="btn btn-success">';
                     echo '<i class="fa fa-shopping-cart"></i>';
                     echo '</a>';
                 } else {

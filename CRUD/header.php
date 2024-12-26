@@ -281,7 +281,7 @@
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <a class="dropdown-item" href="javascript:;">
+                  <a class="dropdown-item" href="logout.php">
                     <div class="d-flex align-items-center">
                       <div class="">
                         <ion-icon name="log-out-outline"></ion-icon>

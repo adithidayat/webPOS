@@ -8,5 +8,5 @@ $password = "";
 
 $conn = mysqli_connect($servername, $username, $password,"db_penjualan");
 
-
+date_default_timezone_set('Asia/Jakarta');
 ?>

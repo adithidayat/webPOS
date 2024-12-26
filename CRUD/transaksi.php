@@ -1,3 +1,26 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Jakarta');
+
+$total = 0;
+if (isset($_SESSION['keranjang']) && !empty($_SESSION['keranjang'])) {
+    foreach ($_SESSION['keranjang'] as $produk) {
+        $total += $produk['harga'] * $produk['jumlah'];
+    }
+}
+
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    $message_type = $_SESSION['message_type'];
+    unset($_SESSION['message']); // Hapus pesan setelah ditampilkan
+
+    // Menampilkan alert berdasarkan tipe pesan
+    echo "<script type='text/javascript'>
+            alert('$message');
+          </script>";
+}
+?>
+
 <!doctype html>
 <html lang="en" class="semi-dark">
 
@@ -101,18 +124,17 @@
                     <div class="card border-primary ">
                         <div class="card-header bg-primary text-white" style="height: 90px;">
                             <h4><i class="fa fa-shopping-cart"></i> KASIR
-                                <a class="btn btn-danger float-end" href="reset_url">
+                                <a class="btn btn-danger float-end" href="jual.php?remove_from_cart=all">
                                     <b>RESET KERANJANG</b>
                                 </a>
                             </h4>
                         </div>
                         <div class="card-body">
                             <div id="keranjang">
-                                <!-- Transaction Date Section -->
-                                <table class="table table-bordered">
+                            <table class="table table-bordered">
                                     <tr>
                                         <td><b>Tanggal</b></td>
-                                        <td><input type="text" readonly="readonly" class="form-control" value="12 December 2024, 14:30" name="tgl"></td>
+                                        <td><input type="text" readonly="readonly" class="form-control" value="<?php echo date('d F Y, H:i'); ?>" name="tgl"></td>
                                     </tr>
                                 </table>
 
@@ -124,68 +146,106 @@
                                             <td>Nama Barang</td>
                                             <td style="width:10%;">Jumlah</td>
                                             <td style="width:20%;">Total</td>
-                                            <td>Kasir</td>
                                             <td>Aksi</td>
+                                          
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>1</td>
-                                            <td>Produk A</td>
-                                            <td><input type="number" value="2" class="form-control"></td>
-                                            <td>Rp. 200.000,-</td>
-                                            <td>Admin</td>
-                                            <td>
-                                                <button class="btn btn-warning">Edit</button>
-                                                <button class="btn btn-danger">Hapus</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>2</td>
-                                            <td>Produk B</td>
-                                            <td><input type="number" value="1" class="form-control"></td>
-                                            <td>Rp. 100.000,-</td>
-                                            <td>Admin</td>
-                                            <td>
-                                                <button class="btn btn-warning">Edit</button>
-                                                <button class="btn btn-danger">Hapus</button>
-                                            </td>
-                                        </tr>
+                                    <tbody >
+                                    <?php
+                                            // Cek apakah ada produk di keranjang
+                                            if (isset($_SESSION['keranjang']) && count($_SESSION['keranjang']) > 0) {
+                                                $no = 1;
+                                                $total = 0;
+                                                foreach ($_SESSION['keranjang'] as $id => $produk) {
+                                                    $total += $produk['harga'] * $produk['jumlah'];
+                                            ?>
+                                                <tr>
+                                                    <td><?php echo $no++; ?></td>
+                                                    <td><?php echo $produk['nm_produk']; ?></td>
+                                                    <td>
+                                                        <form action="jual.php" method="POST" class="d-flex align-items-center">
+                                                            <input type="number" name="jumlah" value="<?php echo $produk['jumlah']; ?>" min="1" style="width: 60px;" class="form-control form-control-sm">
+                                                            <input type="hidden" name="id_produk" value="<?php echo $id; ?>">
+                                                            
+                                                       
+                                                    </td>
+                                                    <td>Rp. <?php echo number_format($produk['harga'] * $produk['jumlah'], 0, ',', '.'); ?></td>
+                                                    <td>
+                                                    <button type="submit" name="update_keranjang" class="btn btn-warning btn-sm ml-2">Update</button>
+                                                        <a href="jual.php?remove_from_cart=1&id=<?php echo $id; ?>" class="btn btn-danger btn-sm">Hapus</a>
+                                                    </td>
+                                                    </form>
+                                                </tr>
+                                            <?php
+                                                }
+                                            } else {
+                                                echo '<tr><td colspan="5">Keranjang kosong</td></tr>';
+                                            }
+                                            if (isset($_SESSION['message'])) {
+                                                echo '<div class="alert alert-' . $_SESSION['message_type'] . '">' . $_SESSION['message'] . '</div>';
+                                                unset($_SESSION['message']);
+                                                unset($_SESSION['message_type']);
+                                            }
+                                            ?>
                                     </tbody>
                                 </table>
 
                                 <br/>
 
                                 <!-- Total Amount Section -->
-                                <form method="POST" action="#">
+                                <form method="POST" action="jual.php">
                                     <table class="table table-stripped">
                                         <tr>
                                             <td>Total Semua</td>
-                                            <td><input type="text" class="form-control" name="total" value="Rp. 300.000,-" readonly></td>
+                                            <td>
+                                                <input type="text" class="form-control" name="total" 
+                                                value="<?php echo isset($total) ? number_format($total, 0, ',', '.') : (isset($_SESSION['total']) ? number_format($_SESSION['total'], 0, ',', '.') : '0'); ?>" readonly>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nama Pembeli</td>
+                                            <td>
+                                                <input type="text" class="form-control" name="NamaPembeli" 
+                                                value="<?php echo isset($_SESSION['NamaPembeli']) ? $_SESSION['NamaPembeli'] : ''; ?>">
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>Bayar</td>
-                                            <td><input type="text" class="form-control" name="bayar"></td>
+                                            <td><input type="text" class="form-control" name="bayar"
+                                            value="<?php echo isset($_SESSION['uang']) ? $_SESSION['uang'] : ''; ?>"
+                                            ></td>
                                         </tr>
                                         <tr>
                                             <td></td>
-                                            <td><button class="btn btn-success"> Bayar</button></td>
+                                            <td>
+                                                <button class="btn btn-success">Bayar</button>
+                                                <!-- Cek apakah keranjang tidak kosong sebelum menampilkan tombol RESET -->
+                                                <?php if (isset($_SESSION['keranjang']) && count($_SESSION['keranjang']) > 0): ?>
+                                                    <a class="btn btn-danger" href="jual.php?remove_from_cart=all">
+                                                        <b>RESET</b>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
                                     </table>
                                 </form>
+
+
 
                                 <!-- Change & Print Section -->
                                 <table class="table table-bordered">
                                     <tr>
                                         <td>Kembali</td>
-                                        <td><input type="text" class="form-control" value="Rp. 0,-" readonly></td>
+                                        <td><input type="text" class="form-control" value="<?php 
+                                                echo  number_format($_SESSION['kembali'], 0, ',', '.');
+                                            ?>" readonly></td>
                                         <td></td>
                                         <td>
                                             <a href="print_url" target="_blank">
                                             <button class="btn btn-default bg-primary text-white">
                                               <i class="fa fa-print"></i> Print Untuk Bukti Pembayaran
                                             </button></a>
-                                            </a>
+                                            
                                         </td>
                                     </tr>
                                 </table>
@@ -250,6 +310,8 @@
                 $("#tunggu").hide();
             }
         });
+
+      
     });
   </script>
 
